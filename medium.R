@@ -1,8 +1,3 @@
-
-Bharat Sinha
-3:48 PM (0 minutes ago)
-to me
-
 install.packages('rvest');
 install.packages('textcat');
 require('rvest');
