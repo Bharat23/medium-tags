@@ -3,10 +3,15 @@ install.packages('textcat');
 require('rvest');
 require('textcat');
 
+install.packages('dplyr');
+require('dplyr')
+
 data = read.csv('./Medium_Clean.csv', stringsAsFactors = FALSE);
 
 contentList = data.frame();
-for (i in seq(1, 100)) {
+startIndex = 2001;
+endIndex = 3000;
+for (i in seq(2001, 20000)) {
   url = as.vector(data[i, 'url']);
   contentList[i, 'url'] = url;
   texts = tryCatch({
@@ -15,23 +20,33 @@ for (i in seq(1, 100)) {
     pText = html_text(pTags);
     language = textcat::textcat(pText);
     if (!is.na(language[1]) && language[1] == 'english') {
-      print('here')
+      print(paste("Success on:", i, url))
+      logger(paste("Success on:", i, url))
       pText;
     } else {
+      print(paste("Fail on:", i, url, "Language"))
+      logger(paste("Fail on:", i, url, "Language"));
       msg = NA;
       msg;
     }
   }, error = function(error_condition) {
-    print(error_condition)
+    print(paste("Fail on:", i, url, "HTTP ERROR", error_condition))
+    logger(paste("Fail on:", i, url, "HTTP ERROR", error_condition));
     msg = NA;
     msg;
   });
   contentList[i, 'content'] = paste(texts, sep = " ", collapse = " ");
+  if (i%%1000 == 0) {
+    endIndex = i;
+    new_data=merge(data[startIndex:endIndex,], contentList, by.y = "url");
+    new_data_filter_1 = dplyr::filter(new_data, new_data['content'] != 'NA')
+    print("Writing the file");
+    write.csv(new_data_filter_1, file = paste("Data", "_", startIndex,"_", endIndex, ".csv", sep = ""))
+    startIndex = i+1;
+    contentList = data.frame();
+  }
 }
 
-
-new_data=merge(data[1:100,], contentList, by.y = "url");
-new_data_filter_1 = filter(new_data, new_data['content'] != 'NA')
-new_data_filter_2 = filter(new_data, new_data['content'] != 'bad html')
-
-write.csv(new_data_filter_1, file = "MyData.csv")
+logger = function(message) {
+  write(message, file="log.txt", append=TRUE)
+}
