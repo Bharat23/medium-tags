@@ -8,10 +8,19 @@ require('dplyr')
 
 data = read.csv('./Medium_Clean.csv', stringsAsFactors = FALSE);
 
+# for random selection of script =======
+randomRows = function(df,n){
+  return(df[sample(nrow(df),n),])
+}
+
+data = randomRows(data, 1000)
+# for random selection of script ========
+
+
 contentList = data.frame();
-startIndex = 2001;
-endIndex = 3000;
-for (i in seq(2001, 20000)) {
+startIndex = 1;
+endIndex = 1000;
+for (i in seq(1, 1000)) {
   url = as.vector(data[i, 'url']);
   contentList[i, 'url'] = url;
   texts = tryCatch({
@@ -21,17 +30,17 @@ for (i in seq(2001, 20000)) {
     language = textcat::textcat(pText);
     if (!is.na(language[1]) && language[1] == 'english') {
       print(paste("Success on:", i, url))
-      logger(paste("Success on:", i, url))
+      #logger(paste("Success on:", i, url))
       pText;
     } else {
       print(paste("Fail on:", i, url, "Language"))
-      logger(paste("Fail on:", i, url, "Language"));
+      #logger(paste("Fail on:", i, url, "Language"));
       msg = NA;
       msg;
     }
   }, error = function(error_condition) {
     print(paste("Fail on:", i, url, "HTTP ERROR", error_condition))
-    logger(paste("Fail on:", i, url, "HTTP ERROR", error_condition));
+    #logger(paste("Fail on:", i, url, "HTTP ERROR", error_condition));
     msg = NA;
     msg;
   });
